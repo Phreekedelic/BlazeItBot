@@ -20,7 +20,7 @@ def find_item(obj, key):
             if item is not None:
                 return item
 
-# recursivley check for items in a dict given key
+# recursively check for items in a dict given key
 
 
 def keys_exist(obj, keys):
@@ -39,12 +39,11 @@ def send_message(send_id, msg_txt):
     data = json.dumps({"recipient": {"id": send_id},
                        "message": {"text": msg_txt}})
 
-    r = requests.post("https://graph.facebook.com/v2.6/me/messages",
+    response = requests.post("https://graph.facebook.com/v2.6/me/messages",
                       params=params, headers=headers, data=data)
 
-    if r.status_code != 200:
-        print(r.status_code)
-        print(r.text)
+    if response.status_code != 200:
+        print(response.status_code)
 
 
 def request_broadcast():
@@ -54,14 +53,12 @@ def request_broadcast():
     data = json.dumps({"messages": [{"dynamic_text": {
                       "text": "Hey {{first_name}}, it's 420 somewhere- blaze it.", "fallback_text": "It's 420 somewhere- blaze it."}}]})
 
-    r = requests.post("https://graph.facebook.com/v2.11/me/message_creatives",
+    response = requests.post("https://graph.facebook.com/v2.11/me/message_creatives",
                       params=params, headers=headers, data=data)
 
-    if r.status_code != 200:
+    if response.status_code != 200:
         print(r.status_code)
-        print(r.text)
     else:
-        print(r.text)
         data = json.dumps(
             {"message_creative_id": r.json()['message_creative_id']})
 
