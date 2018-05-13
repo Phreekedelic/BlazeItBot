@@ -26,8 +26,8 @@ def find_item(obj, key):
 def keys_exist(obj, keys):
     for key in keys:
         if find_item(obj, key) is None:
-            return(False)
-    return(True)
+            return False
+    return True
 
 # send txt via messenger to id
 
@@ -40,30 +40,33 @@ def send_message(send_id, msg_txt):
                        "message": {"text": msg_txt}})
 
     response = requests.post("https://graph.facebook.com/v2.6/me/messages",
-                      params=params, headers=headers, data=data)
+                             params=params, headers=headers, data=data)
 
     if response.status_code != 200:
         print(response.status_code)
+        print(response.text)
 
 
 def request_broadcast():
     params = {"access_token": os.environ['access_token']}
-
     headers = {"Content-Type": "application/json"}
     data = json.dumps({"messages": [{"dynamic_text": {
-                      "text": "Hey {{first_name}}, it's 420 somewhere- blaze it.", "fallback_text": "It's 420 somewhere- blaze it."}}]})
+                      "text": "Hey {{first_name}}, it's 420- blaze it.", "fallback_text": "It's 420- blaze it."}}]})
+
 
     response = requests.post("https://graph.facebook.com/v2.11/me/message_creatives",
-                      params=params, headers=headers, data=data)
+                             params=params, headers=headers, data=data)
 
     if response.status_code != 200:
-        print(r.status_code)
+        print(response.status_code)
+        print(response.text)
     else:
         data = json.dumps(
-            {"message_creative_id": r.json()['message_creative_id']})
+            {"message_creative_id": response.json()['message_creative_id']})
 
         broadcastResponse = requests.post(
-            "https://graph.facebook.com/v2.11/me/broadcast_messages", params=params, headers=headers, data=data)
+            "https://graph.facebook.com/v2.11/me/broadcast_messages",
+            params=params, headers=headers, data=data)
 
         if broadcastResponse.status_code != 200:
             print(broadcastResponse.status_code)
@@ -74,38 +77,21 @@ def request_broadcast():
 
 
 def lambda_handler(event, context):
-    # debug
-
-    print("event:")
-
-    print(event)
-    print("context")
-    print(context)
-
     # handle webhook challenge
-
     if keys_exist(event, ["params", "querystring", "hub.verify_token", "hub.challenge"]):
-
         v_token = str(find_item(event, 'hub.verify_token'))
-
         challenge = int(find_item(event, 'hub.challenge'))
-
-        if (os.environ['verify_token'] == v_token):
-            return(challenge)
+        if os.environ['verify_token'] == v_token:
+            return challenge
 
     # handle messaging events
-
     if keys_exist(event, ['body-json', 'entry']):
-
         event_entry0 = event['body-json']['entry'][0]
         if keys_exist(event_entry0, ['messaging']):
             messaging_event = event_entry0['messaging'][0]
             msg_txt = messaging_event['message']['text']
-
             sender_id = messaging_event['sender']['id']
             send_message(sender_id, msg_txt)
     elif keys_exist(event, ['source', 'resources']):
-        # and event['resources'][0] == 'arn:aws:events:us-east-2:565414393577:rule/1620UTC' ):
-
         request_broadcast()
-    return(None)
+    return None
