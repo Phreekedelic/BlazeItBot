@@ -31,7 +31,6 @@ def keys_exist(obj, keys):
 
 # send txt via messenger to id
 
-
 def send_message(send_id, msg_txt):
     params = {"access_token": os.environ['access_token']}
 
